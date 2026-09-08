@@ -1,0 +1,112 @@
+<svg viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <!-- ============ Section labels ============ -->
+  <text x="24" y="34" font-size="15" font-weight="700" fill="#0f172a">Ingestion (offline, src/ingest.py + embed.py)</text>
+  <text x="24" y="304" font-size="15" font-weight="700" fill="#0f172a">Query time (src/retrieve.py + generate.py)</text>
+
+  <!-- ============ Row 1: Ingestion ============ -->
+  <!-- box template: 150x64 -->
+  <g font-size="13" text-anchor="middle">
+    <rect x="24" y="52" width="150" height="64" rx="8" fill="#eef2ff" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="99" y="78" fill="#1e1b4b" font-weight="600">dbt docs</text>
+    <text x="99" y="96" fill="#4338ca" font-size="11">483 .md files</text>
+
+    <rect x="230" y="52" width="170" height="64" rx="8" fill="#eef2ff" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="315" y="72" fill="#1e1b4b" font-weight="600">chunk + clean</text>
+    <text x="315" y="88" fill="#1e1b4b" font-weight="600">frontmatter</text>
+    <text x="315" y="104" fill="#4338ca" font-size="11">ingest.py</text>
+
+    <rect x="456" y="52" width="170" height="64" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.5"/>
+    <text x="541" y="72" fill="#052e16" font-weight="600">embed chunks</text>
+    <text x="541" y="88" fill="#047857" font-size="11">OpenAI text-embedding-3-small</text>
+    <text x="541" y="104" fill="#047857" font-size="11">embed.py</text>
+
+    <rect x="682" y="52" width="180" height="64" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="772" y="72" fill="#2e1065" font-weight="600">pgvector</text>
+    <text x="772" y="88" fill="#6d28d9" font-size="11">Supabase Postgres</text>
+    <text x="772" y="104" fill="#6d28d9" font-size="11">store.py</text>
+  </g>
+
+  <line x1="174" y1="84" x2="228" y2="84" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="400" y1="84" x2="454" y2="84" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="626" y1="84" x2="680" y2="84" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- pgvector feeds down into both retrieval paths -->
+  <line x1="772" y1="116" x2="772" y2="180" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="772" y1="180" x2="315" y2="180" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="315" y1="180" x2="315" y2="322" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <line x1="772" y1="180" x2="772" y2="182" stroke="#94a3b8" stroke-width="0"/>
+  <line x1="772" y1="180" x2="640" y2="180" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="640" y1="180" x2="640" y2="322" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <text x="475" y="172" font-size="11" fill="#64748b" text-anchor="middle">queried at request time by both retrieval paths below</text>
+
+  <!-- ============ Row 2: Query time ============ -->
+  <g font-size="13" text-anchor="middle">
+    <rect x="24" y="322" width="150" height="60" rx="8" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.5"/>
+    <text x="99" y="348" fill="#450a0a" font-weight="600">user question</text>
+    <text x="99" y="366" fill="#b91c1c" font-size="11">app.py / eval.py</text>
+
+    <!-- vector path -->
+    <rect x="230" y="322" width="170" height="60" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.5"/>
+    <text x="315" y="344" fill="#052e16" font-weight="600">vector_search</text>
+    <text x="315" y="360" fill="#047857" font-size="11">top 20, cosine similarity</text>
+    <text x="315" y="374" fill="#047857" font-size="11">retrieve()</text>
+
+    <!-- keyword path -->
+    <rect x="230" y="398" width="170" height="60" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="315" y="420" fill="#2e1065" font-weight="600">keyword_search</text>
+    <text x="315" y="436" fill="#6d28d9" font-size="11">Postgres full-text (ts_rank)</text>
+    <text x="315" y="450" fill="#6d28d9" font-size="11">store.py</text>
+
+    <!-- RRF fuse -->
+    <rect x="456" y="360" width="170" height="60" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+    <text x="541" y="382" fill="#451a03" font-weight="600">RRF fuse</text>
+    <text x="541" y="398" fill="#b45309" font-size="11">reciprocal rank fusion</text>
+    <text x="541" y="412" fill="#b45309" font-size="11">add_keyword_search()</text>
+
+    <!-- rerank -->
+    <rect x="682" y="360" width="150" height="60" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+    <text x="757" y="382" fill="#451a03" font-weight="600">rerank</text>
+    <text x="757" y="398" fill="#b45309" font-size="11">cross-encoder, top 5</text>
+    <text x="757" y="412" fill="#b45309" font-size="11">rerank()</text>
+
+    <!-- generate -->
+    <rect x="682" y="500" width="150" height="70" rx="8" fill="#fff7ed" stroke="#c2410c" stroke-width="1.5"/>
+    <text x="757" y="522" fill="#431407" font-weight="600">generate answer</text>
+    <text x="757" y="538" fill="#c2410c" font-size="11">Claude, grounded prompt</text>
+    <text x="757" y="552" fill="#c2410c" font-size="11">w/ citations</text>
+    <text x="757" y="566" fill="#c2410c" font-size="11">generate.py</text>
+  </g>
+
+  <line x1="174" y1="352" x2="228" y2="352" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="99" y1="382" x2="99" y2="428" stroke="#475569" stroke-width="1.5"/>
+  <line x1="99" y1="428" x2="228" y2="428" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <line x1="400" y1="358" x2="454" y2="384" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="400" y1="440" x2="454" y2="400" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="626" y1="390" x2="680" y2="390" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="757" y1="420" x2="757" y2="498" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- answer out -->
+  <rect x="682" y="596" width="150" height="34" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <text x="757" y="618" font-size="12" fill="#0f172a" text-anchor="middle" font-weight="600">answer + citations</text>
+  <line x1="757" y1="570" x2="757" y2="594" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- eval side-channel -->
+  <rect x="24" y="500" width="150" height="70" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="99" y="522" font-size="13" text-anchor="middle" fill="#0f172a" font-weight="600">eval harness</text>
+  <text x="99" y="538" font-size="11" text-anchor="middle" fill="#334155">precision@5,</text>
+  <text x="99" y="552" font-size="11" text-anchor="middle" fill="#334155">faithfulness (ragas)</text>
+  <text x="99" y="566" font-size="11" text-anchor="middle" fill="#334155">eval.py</text>
+
+  <line x1="99" y1="500" x2="99" y2="384" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="174" y1="530" x2="680" y2="530" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="430" y="522" font-size="11" fill="#64748b" text-anchor="middle">measures retrieval + generated answers</text>
+</svg>
