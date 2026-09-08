@@ -4,5 +4,5 @@ __pycache__/
 .env
 data/raw/
 data/chunks.jsonl
-evals/results.json
 .streamlit/
+*.log

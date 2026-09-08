@@ -1,2 +1,25 @@
-{"question": "REPLACE ME: a real question your corpus can answer", "expected_source_id": "REPLACE ME: the doc filename that contains the answer"}
-{"question": "REPLACE ME", "expected_source_id": "REPLACE ME"}
+{"question": "What is an incremental model in dbt and when should I use one?", "expected_source_id": "build\\incremental-models-overview.md"}
+{"question": "What is the microbatch incremental strategy and when should I use it?", "expected_source_id": "build\\incremental-microbatch.md"}
+{"question": "What incremental strategies does dbt support?", "expected_source_id": "build\\incremental-strategy.md"}
+{"question": "How do I define a source in dbt?", "expected_source_id": "build\\sources.md"}
+{"question": "What are dbt seeds and when should I use them?", "expected_source_id": "build\\seeds.md"}
+{"question": "What is a snapshot in dbt and what problem does it solve?", "expected_source_id": "build\\snapshots.md"}
+{"question": "What are the different types of materializations in dbt?", "expected_source_id": "build\\materializations.md"}
+{"question": "How do I write a Python model in dbt?", "expected_source_id": "build\\python-models.md"}
+{"question": "How do I write SQL models in dbt?", "expected_source_id": "build\\sql-models.md"}
+{"question": "What are dbt data tests and how do I add one to a model?", "expected_source_id": "build\\data-tests.md"}
+{"question": "How do unit tests work in dbt?", "expected_source_id": "build\\unit-tests.md"}
+{"question": "How do I write and use a Jinja macro in dbt?", "expected_source_id": "build\\jinja-macros.md"}
+{"question": "How do I add a package dependency to my dbt project?", "expected_source_id": "build\\packages.md"}
+{"question": "How do I use pre-hooks and post-hooks in dbt?", "expected_source_id": "build\\hooks-operations.md"}
+{"question": "What are exposures in dbt and why would I define one?", "expected_source_id": "build\\exposures.md"}
+{"question": "How do I customize the schema a dbt model builds into?", "expected_source_id": "build\\custom-schemas.md"}
+{"question": "How do environment variables work in a dbt project?", "expected_source_id": "build\\environment-variables.md"}
+{"question": "How do I define and use project variables in dbt?", "expected_source_id": "build\\project-variables.md"}
+{"question": "What are dbt groups used for?", "expected_source_id": "build\\groups.md"}
+{"question": "How do I set a custom database for a dbt model to build into?", "expected_source_id": "build\\custom-databases.md"}
+{"question": "How do I document my dbt models?", "expected_source_id": "build\\documentation.md"}
+{"question": "How do I check source data freshness in dbt?", "expected_source_id": "deploy\\source-freshness.md"}
+{"question": "What is continuous integration in dbt and how does it work?", "expected_source_id": "deploy\\continuous-integration.md"}
+{"question": "What is the profiles.yml file used for in dbt?", "expected_source_id": "local\\profiles.yml.md"}
+{"question": "What are threads in dbt and how do they affect model execution?", "expected_source_id": "running-a-dbt-project\\using-threads.md"}

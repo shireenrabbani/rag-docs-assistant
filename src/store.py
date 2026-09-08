@@ -58,12 +58,36 @@ def vector_search(query_embedding, top_k: int) -> list[dict]:
         cur.execute(
             """
             SELECT chunk_id, source_id, source_path, text,
-                   1 - (embedding <=> %s) AS similarity
+                   1 - (embedding <=> %s::vector) AS similarity
             FROM chunks
-            ORDER BY embedding <=> %s
+            ORDER BY embedding <=> %s::vector
             LIMIT %s
             """,
             (query_embedding, query_embedding, top_k),
+        )
+        cols = [d[0] for d in cur.description]
+        return [dict(zip(cols, row)) for row in cur.fetchall()]
+
+
+def keyword_search(query: str, top_k: int) -> list[dict]:
+    """Postgres full-text search (not vector-based) — catches exact-term
+    matches (error codes, config keys) that embedding similarity can miss.
+
+    to_tsvector() runs at query time here with no index, which is fine at
+    ~3K rows for a portfolio project. At real scale this needs a
+    precomputed GIN index: `CREATE INDEX ... USING GIN (to_tsvector('english', text))`.
+    """
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT chunk_id, source_id, source_path, text,
+                   ts_rank_cd(to_tsvector('english', text), plainto_tsquery('english', %s)) AS rank
+            FROM chunks
+            WHERE to_tsvector('english', text) @@ plainto_tsquery('english', %s)
+            ORDER BY rank DESC
+            LIMIT %s
+            """,
+            (query, query, top_k),
         )
         cols = [d[0] for d in cur.description]
         return [dict(zip(cols, row)) for row in cur.fetchall()]

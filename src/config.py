@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
-OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
-DATABASE_URL = os.environ["DATABASE_URL"]
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 EMBEDDING_MODEL = "text-embedding-3-small"
 EMBEDDING_DIM = 1536

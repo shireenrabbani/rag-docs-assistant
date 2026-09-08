@@ -1,33 +1,75 @@
 """Load raw docs and split into overlapping token-bounded chunks.
 
-Day 1-2 task. Fixed-size token chunking is the starting point below —
-once retrieval eval numbers are in (src/eval.py), come back and compare
-against a semantic/heading-aware chunker. Write down the precision delta
-in the README "What I'd do differently" section either way: that
-comparison is itself a talking point in interviews.
+Fixed-size token chunking is the starting point below — once retrieval
+eval numbers are in (src/eval.py), consider comparing against a
+semantic/heading-aware chunker. Write down the precision delta in the
+README "What I'd do differently" section either way: that comparison
+is itself a talking point in interviews.
+
+FRONTMATTER HANDLING (see README "Known limitations" / "Results" miss
+analysis for the full before/after numbers):
+  1. Left in raw            -> baseline 0.44, hybrid 0.60
+  2. Stripped entirely      -> baseline 0.36, hybrid 0.64
+     (helped short docs with weak body content, hurt docs whose title
+     restated the topic and was doing real semantic work)
+  3. title+description prepended as one clean line, rest of frontmatter
+     discarded (current) -> intent is to keep the useful signal from (1)
+     without the raw YAML syntax noise. Re-run src/eval.py after
+     re-ingesting + re-embedding to see whether this actually beats both.
 """
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import tiktoken
+import yaml
 
 from src.config import CHUNK_OVERLAP_TOKENS, CHUNK_SIZE_TOKENS
 
 ENCODING = tiktoken.get_encoding("cl100k_base")
 
+# Docusaurus/Jekyll-style frontmatter: a '---' delimited block at the very
+# start of the file. re.DOTALL so '.' spans the newlines inside the block,
+# and the capture group isolates just the YAML body (without the '---'
+# fences) for parsing.
+FRONTMATTER_RE = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
+
+
+def clean_frontmatter(text: str) -> str:
+    """Replace raw YAML frontmatter with a single plain-text summary line
+    built from title + description, so the semantic signal survives
+    without the '---\\ntitle: "..."\\n...' syntax diluting the embedding."""
+    match = FRONTMATTER_RE.match(text)
+    if not match:
+        return text
+
+    body = text[match.end():]
+    try:
+        meta = yaml.safe_load(match.group(1)) or {}
+    except yaml.YAMLError:
+        # Malformed frontmatter in a handful of docs shouldn't crash the
+        # whole ingest run — fall back to just dropping it.
+        return body
+
+    title = str(meta.get("title") or "").strip()
+    description = str(meta.get("description") or "").strip()
+    summary = ". ".join(p for p in (title, description) if p)
+    return f"{summary}\n\n{body}" if summary else body
+
 
 def load_documents(source_dir: Path) -> list[dict]:
-    """Read every .md/.txt file under source_dir into {id, path, text} records."""
+    """Read every .md/.mdx/.txt file under source_dir into {id, path, text} records."""
     docs = []
     for path in sorted(source_dir.rglob("*")):
-        if path.suffix.lower() not in {".md", ".txt"}:
+        if path.suffix.lower() not in {".md", ".mdx", ".txt"}:
             continue
+        raw_text = path.read_text(encoding="utf-8", errors="ignore")
         docs.append({
             "id": str(path.relative_to(source_dir)),
             "path": str(path),
-            "text": path.read_text(encoding="utf-8", errors="ignore"),
+            "text": clean_frontmatter(raw_text),
         })
     return docs
 

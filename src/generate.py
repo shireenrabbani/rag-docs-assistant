@@ -37,8 +37,12 @@ def generate_answer(query: str, chunks: list[dict]) -> dict:
     )
     latency_s = time.perf_counter() - start
 
+    # Claude's response can include a "thinking" block before the text block,
+    # so don't assume content[0] is the answer — find the text block explicitly.
+    answer = next(b.text for b in response.content if b.type == "text")
+
     return {
-        "answer": response.content[0].text,
+        "answer": answer,
         "latency_s": latency_s,
         "input_tokens": response.usage.input_tokens,
         "output_tokens": response.usage.output_tokens,

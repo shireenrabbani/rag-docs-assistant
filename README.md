@@ -34,15 +34,32 @@ Docs (Databricks/dbt/Azure)
 
 ## Results
 
-*(Fill in after Day 4-5 — this section is what a reviewer reads first.)*
+25 hand-labeled question/expected-source pairs, spanning `build/`, `deploy/`, `local/`, and `running-a-dbt-project/` docs.
 
-| Metric | Value |
+Three frontmatter-handling strategies were tested against the same 25-question eval set, because the first fix wasn't a clean win and the second attempt was:
+
+| Strategy | Baseline precision@5 | Hybrid precision@5 |
+|---|---|---|
+| 1. Raw frontmatter left in chunk text | 0.44 | 0.60 |
+| 2. Frontmatter stripped entirely | 0.36 (-0.08) | 0.64 (+0.04) |
+| 3. **`title` + `description` extracted, prepended as one clean line** | 0.40 | **0.76 (+0.16)** |
+
+| Metric | Value (hybrid mode, strategy 3) |
 |---|---|
-| Retrieval precision@5 | TBD |
-| Faithfulness / hallucination rate | TBD |
-| Median latency (end-to-end) | TBD |
-| Cost per query | TBD |
-| Eval set size | TBD |
+| Median latency (end-to-end, retrieval + generation) | 7.73s |
+| Cost per query | $0.019 |
+| Eval set size | 25 |
+| Faithfulness / hallucination rate | TBD — needs ragas wired in |
+
+**How this played out — frontmatter is a mixed signal, not pure noise.** The starting hypothesis was that YAML frontmatter just dilutes the embedding signal. Stripping it entirely (strategy 2) fixed 3 of the original 10 misses (`seeds.md`, `snapshots.md`, `data-tests.md`) but broke 2 that were previously hits — *"How do I define a source in dbt?"* and *"What is continuous integration in dbt and how does it work?"* — because those docs' `title:` fields almost exactly restated the question topic ("Add sources to your DAG", "Continuous integration"), and that title was actively helping vector similarity, not hurting it. So the real fix wasn't "remove the frontmatter," it was "keep the semantic content of the frontmatter, drop the YAML syntax around it": extracting `title` + `description` as one plain-text line (strategy 3) kept every fix from strategy 2 **and** avoided both regressions — 0 questions that used to hit now miss. That's what took hybrid retrieval from 0.60 to 0.76 precision@5, a real 27% relative improvement, not a rounding artifact.
+
+Six questions still miss under strategy 3 (`exposures.md`, `environment-variables.md`, `groups.md`, `custom-databases.md`, `profiles.yml.md`, `using-threads.md`) — a good next investigation, not blocking further work on this project.
+
+## Known limitations
+
+- **Frontmatter handling: resolved.** See the Results section for the full 3-strategy comparison — `title`+`description` extraction (strategy 3) is what's live in `src/ingest.py` now, at 0.76 hybrid precision@5.
+- **6 questions still miss retrieval** even under the current setup (`exposures.md`, `environment-variables.md`, `groups.md`, `custom-databases.md`, `profiles.yml.md`, `using-threads.md`) — not yet root-caused, a reasonable next investigation.
+- **Faithfulness/hallucination rate not measured yet** — `src/eval.py` only checks retrieval hits and whether generation ran, not whether the generated answer is actually grounded in the retrieved context. Wiring in ragas is the next real step, not just a TODO comment.
 
 ## What I'd do differently at scale
 
