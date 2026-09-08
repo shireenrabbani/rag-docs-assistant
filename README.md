@@ -46,10 +46,13 @@ Three frontmatter-handling strategies were tested against the same 25-question e
 
 | Metric | Value (hybrid mode, strategy 3) |
 |---|---|
-| Median latency (end-to-end, retrieval + generation) | 7.73s |
+| Median latency (end-to-end, retrieval + generation) | 7.29s |
 | Cost per query | $0.019 |
 | Eval set size | 25 |
-| Faithfulness / hallucination rate | TBD — needs ragas wired in |
+| Mean faithfulness (ragas, gpt-4o-mini judge) | 0.982 |
+| Hallucination rate | **1.8%** |
+
+Faithfulness measures whether the *generated answer* is actually grounded in whatever context was retrieved — it's a different question from whether retrieval found the *right* doc. A wrong-but-retrieved doc can still produce a faithful (grounded-in-the-wrong-context, so a bad but not hallucinated) answer — which is exactly why 1.8% hallucination coexists with 0.76 (not 1.0) retrieval precision: the system prompt's "cite sources, say so if you don't know" instructions are doing their job even when retrieval misses. Judged by gpt-4o-mini rather than Claude (which generated the answers) to avoid the model grading its own homework.
 
 **How this played out — frontmatter is a mixed signal, not pure noise.** The starting hypothesis was that YAML frontmatter just dilutes the embedding signal. Stripping it entirely (strategy 2) fixed 3 of the original 10 misses (`seeds.md`, `snapshots.md`, `data-tests.md`) but broke 2 that were previously hits — *"How do I define a source in dbt?"* and *"What is continuous integration in dbt and how does it work?"* — because those docs' `title:` fields almost exactly restated the question topic ("Add sources to your DAG", "Continuous integration"), and that title was actively helping vector similarity, not hurting it. So the real fix wasn't "remove the frontmatter," it was "keep the semantic content of the frontmatter, drop the YAML syntax around it": extracting `title` + `description` as one plain-text line (strategy 3) kept every fix from strategy 2 **and** avoided both regressions — 0 questions that used to hit now miss. That's what took hybrid retrieval from 0.60 to 0.76 precision@5, a real 27% relative improvement, not a rounding artifact.
 
@@ -59,7 +62,7 @@ Six questions still miss under strategy 3 (`exposures.md`, `environment-variable
 
 - **Frontmatter handling: resolved.** See the Results section for the full 3-strategy comparison — `title`+`description` extraction (strategy 3) is what's live in `src/ingest.py` now, at 0.76 hybrid precision@5.
 - **6 questions still miss retrieval** even under the current setup (`exposures.md`, `environment-variables.md`, `groups.md`, `custom-databases.md`, `profiles.yml.md`, `using-threads.md`) — not yet root-caused, a reasonable next investigation.
-- **Faithfulness/hallucination rate not measured yet** — `src/eval.py` only checks retrieval hits and whether generation ran, not whether the generated answer is actually grounded in the retrieved context. Wiring in ragas is the next real step, not just a TODO comment.
+- **Faithfulness/hallucination rate: resolved.** ragas `Faithfulness` (gpt-4o-mini judge) is wired into `src/eval.py` — 98.2% mean faithfulness / 1.8% hallucination rate on the current eval set. Not yet tested: whether hallucination rate is meaningfully different on the retrieval *misses* specifically (where the model has the wrong context and a real test of whether it stays honest) vs. the hits — the current number is averaged across both.
 
 ## What I'd do differently at scale
 
